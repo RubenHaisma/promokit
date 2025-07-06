@@ -1,82 +1,80 @@
-import { PromoConfig, ChangelogEntry, CreateChangelogRequest } from '../types';
+import { PromoConfig, ChangelogEntry, APIResponse } from '../types';
 
 export class ChangelogAPI {
   constructor(private config: PromoConfig) {}
 
-  async create(data: CreateChangelogRequest): Promise<{
-    id: string;
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.config.baseUrl}${endpoint}`;
+    
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Authorization': `Bearer ${this.config.apiKey}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async create(data: {
+    projectId: string;
     version: string;
     title: string;
-    publishedAt: string;
-  }> {
-    const response = await fetch(`${this.config.baseUrl}/api/changelog/create`, {
+    content: string;
+    changes: string[];
+    publishedAt?: string;
+  }): Promise<ChangelogEntry> {
+    return this.request<ChangelogEntry>('/changelog/create', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to create changelog entry: ${response.statusText}`);
-    }
-
-    return response.json();
   }
 
-  async getAll(projectId: string, options?: { 
-    limit?: number; 
-    offset?: number;
-  }): Promise<ChangelogEntry[]> {
+  async get(
+    projectId: string,
+    options: {
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<{
+    entries: ChangelogEntry[];
+    pagination: {
+      total: number;
+      limit: number;
+      offset: number;
+      hasMore: boolean;
+    };
+  }> {
     const params = new URLSearchParams();
-    if (options?.limit) params.append('limit', options.limit.toString());
-    if (options?.offset) params.append('offset', options.offset.toString());
+    if (options.limit) params.append('limit', options.limit.toString());
+    if (options.offset) params.append('offset', options.offset.toString());
 
-    const response = await fetch(`${this.config.baseUrl}/api/changelog/${projectId}?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to get changelog entries: ${response.statusText}`);
-    }
-
-    return response.json();
+    return this.request(`/changelog/${projectId}?${params.toString()}`);
   }
 
-  async update(entryId: string, data: Partial<CreateChangelogRequest>): Promise<ChangelogEntry> {
-    const response = await fetch(`${this.config.baseUrl}/api/changelog/${entryId}`, {
+  async subscribe(projectId: string, email: string): Promise<APIResponse> {
+    return this.request<APIResponse>(`/changelog/${projectId}/subscribe`, {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async update(entryId: string, data: Partial<ChangelogEntry>): Promise<ChangelogEntry> {
+    return this.request<ChangelogEntry>(`/changelog/${entryId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to update changelog entry: ${response.statusText}`);
-    }
-
-    return response.json();
   }
 
-  async delete(entryId: string): Promise<void> {
-    const response = await fetch(`${this.config.baseUrl}/api/changelog/${entryId}`, {
+  async delete(entryId: string): Promise<APIResponse> {
+    return this.request<APIResponse>(`/changelog/${entryId}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to delete changelog entry: ${response.statusText}`);
-    }
   }
 }

@@ -1,131 +1,171 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Star, User } from 'lucide-react';
+import { TestimonialWallProps, Testimonial } from '../types';
 import { usePromo } from './PromoProvider';
-import { TestimonialWallProps } from '../types';
-import { Testimonial } from '@promokit/js';
+import { clsx } from 'clsx';
 
 export function TestimonialWall({
-  projectId,
+  productId,
   layout = 'grid',
-  theme = 'auto',
-  maxItems = 12,
+  theme = 'dark',
   autoRefresh = false,
+  maxItems = 12,
   showRating = true,
-  customStyles,
-  className = ''
+  onTestimonialClick,
+  className
 }: TestimonialWallProps) {
-  const { client } = usePromo();
+  const config = usePromo();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadTestimonials();
+    fetchTestimonials();
     
     if (autoRefresh) {
-      const interval = setInterval(loadTestimonials, 30000); // Refresh every 30 seconds
+      const interval = setInterval(fetchTestimonials, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
-  }, [projectId, maxItems, autoRefresh]);
+  }, [productId, maxItems]);
 
-  const loadTestimonials = async () => {
+  const fetchTestimonials = async () => {
     try {
-      setError(null);
-      const response = await client.testimonial.getAll(projectId, {
-        limit: maxItems,
-        status: 'approved'
-      });
-      setTestimonials(response.testimonials);
+      const response = await fetch(
+        `${config.baseUrl || 'https://api.promo.dev'}/testimonial/${productId}?limit=${maxItems}&status=APPROVED`,
+        {
+          headers: {
+            'Authorization': `Bearer ${config.apiKey}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setTestimonials(data.testimonials || []);
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load testimonials';
-      setError(errorMessage);
-      console.error('Failed to load testimonials:', error);
+      console.error('Failed to fetch testimonials:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   const renderStars = (rating: number) => {
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={clsx(
+          'w-4 h-4',
+          i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+        )}
+      />
+    ));
   };
 
-  const themeClass = theme === 'dark' ? 'promo-dark' : theme === 'light' ? 'promo-light' : 'promo-auto';
-  const layoutClass = `promo-layout-${layout}`;
+  const gridClasses = clsx(
+    'grid gap-6',
+    layout === 'grid' && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    layout === 'masonry' && 'columns-1 md:columns-2 lg:columns-3',
+    className
+  );
 
   if (isLoading) {
     return (
-      <div className={`promo-testimonials ${themeClass} ${className}`} style={customStyles}>
-        <div className="promo-loading">Loading testimonials...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`promo-testimonials ${themeClass} ${className}`} style={customStyles}>
-        <div className="promo-error">
-          Failed to load testimonials: {error}
-        </div>
-      </div>
-    );
-  }
-
-  if (testimonials.length === 0) {
-    return (
-      <div className={`promo-testimonials ${themeClass} ${className}`} style={customStyles}>
-        <div className="promo-empty">
-          No testimonials available yet.
-        </div>
+      <div className={gridClasses}>
+        {Array.from({ length: 6 }, (_, i) => (
+          <div
+            key={i}
+            className={clsx(
+              'p-6 rounded-lg animate-pulse',
+              isDark ? 'bg-slate-800' : 'bg-gray-100'
+            )}
+          >
+            <div className={clsx(
+              'h-4 rounded mb-4',
+              isDark ? 'bg-slate-700' : 'bg-gray-200'
+            )}></div>
+            <div className={clsx(
+              'h-4 rounded mb-4 w-3/4',
+              isDark ? 'bg-slate-700' : 'bg-gray-200'
+            )}></div>
+            <div className={clsx(
+              'h-4 rounded w-1/2',
+              isDark ? 'bg-slate-700' : 'bg-gray-200'
+            )}></div>
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
-    <div className={`promo-testimonials ${themeClass} ${layoutClass} ${className}`} style={customStyles}>
-      <div className="promo-testimonials-grid">
-        {testimonials.map((testimonial) => (
-          <div key={testimonial.id} className="promo-testimonial-card">
-            {showRating && (
-              <div className="promo-rating">
-                {renderStars(testimonial.rating)}
+    <div className={gridClasses}>
+      {testimonials.map((testimonial, index) => (
+        <motion.div
+          key={testimonial.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+          onClick={() => onTestimonialClick?.(testimonial)}
+          className={clsx(
+            'p-6 rounded-lg border cursor-pointer transition-all duration-300 hover:scale-105',
+            isDark 
+              ? 'bg-slate-800 border-slate-700 hover:border-purple-500/50' 
+              : 'bg-white border-gray-200 hover:border-purple-300',
+            layout === 'masonry' && 'break-inside-avoid mb-6'
+          )}
+        >
+          {showRating && (
+            <div className="flex items-center mb-4">
+              {renderStars(testimonial.rating)}
+            </div>
+          )}
+          
+          <blockquote className={clsx(
+            'text-lg leading-relaxed mb-4',
+            isDark ? 'text-slate-300' : 'text-gray-700'
+          )}>
+            "{testimonial.content}"
+          </blockquote>
+          
+          <div className="flex items-center space-x-3">
+            {testimonial.avatar ? (
+              <img
+                src={testimonial.avatar}
+                alt={testimonial.author}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className={clsx(
+                'w-10 h-10 rounded-full flex items-center justify-center',
+                isDark ? 'bg-slate-700' : 'bg-gray-200'
+              )}>
+                <User className="w-5 h-5 text-gray-400" />
               </div>
             )}
-            <blockquote className="promo-content">
-              "{testimonial.content}"
-            </blockquote>
-            <div className="promo-author">
-              {testimonial.avatar && (
-                <img 
-                  src={testimonial.avatar} 
-                  alt={testimonial.author}
-                  className="promo-avatar"
-                  onError={(e) => {
-                    // Hide broken images
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              )}
-              <div className="promo-author-info">
-                <div className="promo-author-name">{testimonial.author}</div>
-                {testimonial.role && testimonial.company && (
-                  <div className="promo-author-title">
-                    {testimonial.role} at {testimonial.company}
-                  </div>
-                )}
-                {testimonial.role && !testimonial.company && (
-                  <div className="promo-author-title">
-                    {testimonial.role}
-                  </div>
-                )}
-                {!testimonial.role && testimonial.company && (
-                  <div className="promo-author-title">
-                    {testimonial.company}
-                  </div>
-                )}
+            <div>
+              <div className={clsx(
+                'font-medium',
+                isDark ? 'text-white' : 'text-gray-900'
+              )}>
+                {testimonial.author}
               </div>
+              {(testimonial.role || testimonial.company) && (
+                <div className={clsx(
+                  'text-sm',
+                  isDark ? 'text-slate-400' : 'text-gray-600'
+                )}>
+                  {testimonial.role}
+                  {testimonial.role && testimonial.company && ' at '}
+                  {testimonial.company}
+                </div>
+              )}
             </div>
           </div>
-        ))}
-      </div>
+        </motion.div>
+      ))}
     </div>
   );
 }

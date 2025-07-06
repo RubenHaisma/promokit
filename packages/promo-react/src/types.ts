@@ -14,13 +14,13 @@ export interface WaitlistProps {
 }
 
 export interface TestimonialWallProps {
-  projectId: string;
+  productId: string;
   layout?: 'grid' | 'masonry' | 'carousel';
   theme?: 'light' | 'dark' | 'auto';
-  maxItems?: number;
   autoRefresh?: boolean;
+  maxItems?: number;
   showRating?: boolean;
-  customStyles?: React.CSSProperties;
+  onTestimonialClick?: (testimonial: Testimonial) => void;
   className?: string;
 }
 
@@ -30,6 +30,35 @@ export interface ChangelogFeedProps {
   showSubscribe?: boolean;
   compact?: boolean;
   maxItems?: number;
-  customStyles?: React.CSSProperties;
+  onVersionClick?: (version: ChangelogEntry) => void;
   className?: string;
+}
+
+export interface Testimonial {
+  id: string;
+  content: string;
+  author: string;
+  role?: string;
+  company?: string;
+  avatar?: string;
+  rating: number;
+  createdAt: string;
+}
+
+export interface ChangelogEntry {
+  id: string;
+  version: string;
+  title: string;
+  content: string;
+  changes: string[];
+  publishedAt: string;
+}
+
+export interface WaitlistEntry {
+  id: string;
+  email: string;
+  position: number;
+  referralCode: string;
+  referralUrl: string;
+  createdAt: string;
 }

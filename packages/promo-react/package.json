@@ -1,72 +1,57 @@
 {
   "name": "@promokit/react",
   "version": "1.0.0",
-  "description": "React components for PromoKit - Marketing infrastructure for developers",
+  "type": "module",
+  "description": "React components for PromoKit marketing infrastructure",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "README.md"
+    "dist"
   ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "promokit",
     "react",
-    "components",
     "marketing",
     "waitlist",
     "testimonials",
     "changelog",
-    "typescript",
-    "ui"
+    "components"
   ],
-  "author": "PromoKit Team <hello@promo.dev>",
+  "author": "Promo Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/promokit/promokit.git",
+    "url": "https://github.com/promokit-dev/promokit.git",
     "directory": "packages/promo-react"
-  },
-  "bugs": {
-    "url": "https://github.com/promokit/promokit/issues"
-  },
-  "homepage": "https://promo.dev",
-  "engines": {
-    "node": ">=14.0.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
   "dependencies": {
-    "@promokit/js": "^1.0.0"
+    "framer-motion": "^12.23.0",
+    "lucide-react": "^0.446.0",
+    "clsx": "^2.1.1"
   },
   "devDependencies": {
+    "@types/react": "^18.2.22",
+    "@types/react-dom": "^18.2.7",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@types/jest": "^29.5.8",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0",
-    "eslint": "^8.54.0",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "jest": "^29.7.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "rollup": "^4.6.1",
+    "rollup": "^4.9.6",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.3.0"
+    "typescript": "^5.2.2",
+    "eslint": "^8.49.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2"
   }
 }

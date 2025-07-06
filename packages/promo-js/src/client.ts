@@ -20,14 +20,17 @@ export class PromoClient {
     this.changelog = new ChangelogAPI(this.config);
   }
 
-  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
     const url = `${this.config.baseUrl}${endpoint}`;
     
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.config.apiKey}`,
+        'Content-Type': 'application/json',
         ...options.headers,
       },
     });

@@ -1,74 +1,51 @@
-import { PromoConfig, WaitlistEntry, CreateWaitlistRequest } from '../types';
+import { PromoConfig, WaitlistEntry, WaitlistStats, APIResponse } from '../types';
 
 export class WaitlistAPI {
   constructor(private config: PromoConfig) {}
 
-  async create(data: CreateWaitlistRequest): Promise<WaitlistEntry> {
-    const response = await fetch(`${this.config.baseUrl}/api/waitlist/create`, {
-      method: 'POST',
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.config.baseUrl}${endpoint}`;
+    
+    const response = await fetch(url, {
+      ...options,
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.config.apiKey}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
       },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async create(data: {
+    projectId: string;
+    email: string;
+    referralCode?: string;
+    metadata?: Record<string, any>;
+  }): Promise<WaitlistEntry> {
+    return this.request<WaitlistEntry>('/waitlist/create', {
+      method: 'POST',
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to create waitlist entry: ${response.statusText}`);
-    }
-
-    return response.json();
   }
 
-  async getStats(projectId: string): Promise<{
-    totalSignups: number;
-    signupsToday: number;
-    signupsThisWeek: number;
-    referralStats: Array<{ referrer: string; count: number }>;
-  }> {
-    const response = await fetch(`${this.config.baseUrl}/api/waitlist/${projectId}/stats`, {
-      headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to get waitlist stats: ${response.statusText}`);
-    }
-
-    return response.json();
+  async getStats(projectId: string): Promise<WaitlistStats> {
+    return this.request<WaitlistStats>(`/waitlist/${projectId}/stats`);
   }
 
-  async remove(projectId: string, email: string): Promise<void> {
-    const response = await fetch(`${this.config.baseUrl}/api/waitlist/${projectId}/remove`, {
+  async export(projectId: string): Promise<WaitlistEntry[]> {
+    return this.request<WaitlistEntry[]>(`/waitlist/${projectId}/export`);
+  }
+
+  async remove(projectId: string, email: string): Promise<APIResponse> {
+    return this.request<APIResponse>(`/waitlist/${projectId}/remove`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
       body: JSON.stringify({ email }),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to remove from waitlist: ${response.statusText}`);
-    }
-  }
-
-  async export(projectId: string, format: 'csv' | 'json' = 'csv'): Promise<Blob> {
-    const response = await fetch(`${this.config.baseUrl}/api/waitlist/${projectId}/export?format=${format}`, {
-      headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Failed to export waitlist: ${response.statusText}`);
-    }
-
-    return response.blob();
   }
 }
