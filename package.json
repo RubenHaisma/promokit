@@ -1,0 +1,46 @@
+{
+  "name": "promokit",
+  "version": "1.0.0",
+  "description": "Marketing infrastructure for developers - Beautiful APIs for waitlists, testimonials, and changelogs",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "test": "npm test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "npm run clean --workspaces",
+    "publish:packages": "npm publish --workspaces --access public",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "npm run build && changeset publish"
+  },
+  "keywords": [
+    "marketing",
+    "api",
+    "waitlist",
+    "testimonials",
+    "changelog",
+    "developer-tools",
+    "react",
+    "javascript",
+    "typescript"
+  ],
+  "author": "PromoKit Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/promokit/promokit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/promokit/promokit/issues"
+  },
+  "homepage": "https://promo.dev",
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  }
+}
