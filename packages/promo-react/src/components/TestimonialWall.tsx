@@ -31,7 +31,7 @@ export function TestimonialWall({
   const fetchTestimonials = async () => {
     try {
       const response = await fetch(
-        `${config.baseUrl || 'https://api.promo.dev'}/testimonial/${productId}?limit=${maxItems}&status=APPROVED`,
+        `${config.baseUrl || 'https://promokit.pro'}/testimonial/${productId}?limit=${maxItems}&status=APPROVED`,
         {
           headers: {
             'Authorization': `Bearer ${config.apiKey}`,

@@ -27,7 +27,7 @@ export function ChangelogFeed({
   const fetchChangelog = async () => {
     try {
       const response = await fetch(
-        `${config.baseUrl || 'https://api.promo.dev'}/changelog/${projectId}?limit=${maxItems}`,
+        `${config.baseUrl || 'https://promokit.pro'}/changelog/${projectId}?limit=${maxItems}`,
         {
           headers: {
             'Authorization': `Bearer ${config.apiKey}`,
@@ -52,7 +52,7 @@ export function ChangelogFeed({
 
     try {
       const response = await fetch(
-        `${config.baseUrl || 'https://api.promo.dev'}/changelog/${projectId}/subscribe`,
+        `${config.baseUrl || 'https://promokit.pro'}/changelog/${projectId}/subscribe`,
         {
           method: 'POST',
           headers: {

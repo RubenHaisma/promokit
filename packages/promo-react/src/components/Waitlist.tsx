@@ -27,7 +27,7 @@ export function Waitlist({
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${config.baseUrl || 'https://api.promo.dev'}/waitlist/create`, {
+      const response = await fetch(`${config.baseUrl || 'https://promokit.pro'}/waitlist/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${config.apiKey}`,
