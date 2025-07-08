@@ -14,7 +14,7 @@ export function ChangelogFeed({
   onVersionClick,
   className
 }: ChangelogFeedProps) {
-  const config = usePromo();
+  const promoClient = usePromo();
   const [entries, setEntries] = useState<ChangelogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [email, setEmail] = useState('');
@@ -25,20 +25,10 @@ export function ChangelogFeed({
   }, [projectId, maxItems]);
 
   const fetchChangelog = async () => {
+    if (!projectId) return;
     try {
-      const response = await fetch(
-        `${config.baseUrl || 'https://promokit.pro'}/changelog/${projectId}?limit=${maxItems}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${config.apiKey}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setEntries(data.entries || []);
-      }
+      const data = await promoClient.changelog.get(projectId, { limit: maxItems });
+      setEntries(data.entries || []);
     } catch (error) {
       console.error('Failed to fetch changelog:', error);
     } finally {
@@ -48,25 +38,12 @@ export function ChangelogFeed({
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !projectId) return;
 
     try {
-      const response = await fetch(
-        `${config.baseUrl || 'https://promokit.pro'}/changelog/${projectId}/subscribe`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${config.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
-
-      if (response.ok) {
-        setIsSubscribed(true);
-        setEmail('');
-      }
+      await promoClient.changelog.subscribe(projectId, email);
+      setIsSubscribed(true);
+      setEmail('');
     } catch (error) {
       console.error('Failed to subscribe:', error);
     }

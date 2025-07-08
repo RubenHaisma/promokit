@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Share2, Gift, Mail } from 'lucide-react';
 import { WaitlistProps, WaitlistEntry } from '../types';
+import { WaitlistStats } from '@promokit/js';
 import { usePromo } from './PromoProvider';
 import { clsx } from 'clsx';
 
@@ -14,11 +15,27 @@ export function Waitlist({
   onError,
   className
 }: WaitlistProps) {
-  const config = usePromo();
+  const promoClient = usePromo();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [waitlistEntry, setWaitlistEntry] = useState<WaitlistEntry | null>(null);
+  const [stats, setStats] = useState<WaitlistStats | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const waitlistStats = await promoClient.waitlist.getStats(projectId);
+        setStats(waitlistStats);
+      } catch (error) {
+        console.error('Failed to fetch waitlist stats:', error);
+      }
+    };
+
+    if (projectId) {
+      fetchStats();
+    }
+  }, [projectId, promoClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,27 +44,15 @@ export function Waitlist({
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${config.baseUrl || 'https://promokit.pro'}/waitlist/create`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.apiKey}`,
-          'Content-Type': 'application/json',
+      const data = await promoClient.waitlist.create({
+        projectId,
+        email,
+        metadata: {
+          source: 'react-component',
+          theme,
         },
-        body: JSON.stringify({
-          projectId,
-          email,
-          metadata: {
-            source: 'react-component',
-            theme,
-          },
-        }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to join waitlist');
-      }
-
-      const data = await response.json();
       setWaitlistEntry(data);
       setIsSubmitted(true);
       onSignup?.(email, data.referralCode);
@@ -93,7 +98,7 @@ export function Waitlist({
               Position #{waitlistEntry.position}
             </div>
             <p className={isDark ? 'text-slate-400' : 'text-gray-600'}>
-              You're ahead of {Math.max(0, 1000 - waitlistEntry.position)} people
+              You're ahead of {Math.max(0, (stats?.totalSignups || 0) - waitlistEntry.position)} people
             </p>
           </div>
 
@@ -188,7 +193,7 @@ export function Waitlist({
           <div className="flex items-center">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
             <span className={isDark ? 'text-slate-400' : 'text-gray-600'}>
-              1,247 joined
+              {stats ? `${stats.totalSignups.toLocaleString()} joined` : '...'}
             </span>
           </div>
           <div className="flex items-center">

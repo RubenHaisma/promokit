@@ -15,9 +15,24 @@ export function TestimonialWall({
   onTestimonialClick,
   className
 }: TestimonialWallProps) {
-  const config = usePromo();
+  const promoClient = usePromo();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const fetchTestimonials = React.useCallback(async () => {
+    if (!productId) return;
+    try {
+      const data = await promoClient.testimonial.get(productId, {
+        limit: maxItems,
+        status: 'APPROVED',
+      });
+      setTestimonials(data.testimonials || []);
+    } catch (error) {
+      console.error('Failed to fetch testimonials:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [productId, maxItems, promoClient]);
 
   useEffect(() => {
     fetchTestimonials();
@@ -26,29 +41,7 @@ export function TestimonialWall({
       const interval = setInterval(fetchTestimonials, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
-  }, [productId, maxItems]);
-
-  const fetchTestimonials = async () => {
-    try {
-      const response = await fetch(
-        `${config.baseUrl || 'https://promokit.pro'}/testimonial/${productId}?limit=${maxItems}&status=APPROVED`,
-        {
-          headers: {
-            'Authorization': `Bearer ${config.apiKey}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTestimonials(data.testimonials || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch testimonials:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [productId, maxItems, autoRefresh, fetchTestimonials]);
 
   const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 

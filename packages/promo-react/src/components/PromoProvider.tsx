@@ -1,7 +1,7 @@
-import React, { createContext, useContext, ReactNode } from 'react';
-import { PromoConfig } from '../types';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
+import { PromoClient, PromoConfig } from '@promokit/js';
 
-const PromoContext = createContext<PromoConfig | null>(null);
+const PromoContext = createContext<PromoClient | null>(null);
 
 interface PromoProviderProps {
   config: PromoConfig;
@@ -9,8 +9,10 @@ interface PromoProviderProps {
 }
 
 export function PromoProvider({ config, children }: PromoProviderProps) {
+  const promoClient = useMemo(() => new PromoClient(config), [config]);
+
   return (
-    <PromoContext.Provider value={config}>
+    <PromoContext.Provider value={promoClient}>
       {children}
     </PromoContext.Provider>
   );

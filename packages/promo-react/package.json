@@ -1,6 +1,6 @@
 {
   "name": "@promokit/react",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "React components for PromoKit marketing infrastructure",
   "main": "dist/index.js",
@@ -36,6 +36,7 @@
     "react-dom": ">=16.8.0"
   },
   "dependencies": {
+    "@promokit/js": "^2.0.0",
     "framer-motion": "^12.23.0",
     "lucide-react": "^0.446.0",
     "clsx": "^2.1.1"

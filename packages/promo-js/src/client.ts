@@ -11,7 +11,7 @@ export class PromoClient {
 
   constructor(config: PromoConfig) {
     this.config = {
-      baseUrl: 'https://api.promo.dev',
+      baseUrl: 'https://promokit.pro',
       ...config,
     };
 

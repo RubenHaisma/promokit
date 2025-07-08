@@ -6,6 +6,7 @@ export { ChangelogAPI } from './apis/changelog';
 export type {
   PromoConfig,
   WaitlistEntry,
+  WaitlistStats,
   Testimonial,
   ChangelogEntry,
   APIResponse
