@@ -41,16 +41,21 @@ const changelog = await promo.changelog.create({
 });
 ```
 
+## Architecture
+
+PromoKit uses a centralized architecture where all requests go through `promokit.pro`. This simplifies configuration and ensures reliable service delivery.
+
 ## API Reference
 
 ### PromoClient
 
 ```javascript
 const promo = new PromoClient({
-  apiKey: 'your-api-key',
-  baseUrl: 'https://api.promo.dev' // optional, defaults to https://api.promo.dev
+  apiKey: 'your-api-key'
 });
 ```
+
+All API requests are routed through PromoKit's centralized infrastructure at `https://promokit.pro`.
 
 ### Waitlist API
 
@@ -100,8 +105,7 @@ const entries = await promo.waitlist.export('project_123');
 #### Remove Entry
 
 ```javascript
-const result = await promo.waitlist.remove('project_123', 'user@example.com');
-// Returns APIResponse with success status
+await promo.waitlist.remove('project_123', 'user@example.com');
 ```
 
 ### Testimonial API
@@ -111,13 +115,13 @@ const result = await promo.waitlist.remove('project_123', 'user@example.com');
 ```javascript
 const testimonial = await promo.testimonial.submit({
   projectId: 'project_123',
-  content: 'This product is amazing!',
+  content: 'This product changed my life!',
   author: 'John Doe',
   role: 'CEO', // optional
   company: 'Acme Inc', // optional
   avatar: 'https://example.com/avatar.jpg', // optional
-  rating: 5, // optional, defaults to 5
-  metadata: { source: 'email' } // optional
+  rating: 5, // optional, 1-5 stars
+  metadata: { source: 'email-campaign' } // optional
 });
 
 // Returns Testimonial:
@@ -128,7 +132,7 @@ const testimonial = await promo.testimonial.submit({
 //   role?: string,
 //   company?: string,
 //   avatar?: string,
-//   rating: number,
+//   rating?: number,
 //   status: 'PENDING' | 'APPROVED' | 'REJECTED',
 //   createdAt: string,
 //   metadata?: Record<string, any>
@@ -139,8 +143,8 @@ const testimonial = await promo.testimonial.submit({
 
 ```javascript
 const result = await promo.testimonial.get('project_123', {
-  limit: 10, // optional, default varies
-  offset: 0, // optional, default 0
+  limit: 10,
+  offset: 0,
   status: 'APPROVED' // optional: 'PENDING', 'APPROVED', 'REJECTED'
 });
 
@@ -159,13 +163,11 @@ const result = await promo.testimonial.get('project_123', {
 #### Approve/Reject Testimonials
 
 ```javascript
-// Approve testimonial
-await promo.testimonial.approve('testimonial_id');
+// Approve a testimonial
+await promo.testimonial.approve('testimonial_123');
 
-// Reject testimonial
-await promo.testimonial.reject('testimonial_id');
-
-// Both return APIResponse with success status
+// Reject a testimonial
+await promo.testimonial.reject('testimonial_123');
 ```
 
 ### Changelog API
@@ -173,15 +175,15 @@ await promo.testimonial.reject('testimonial_id');
 #### Create Entry
 
 ```javascript
-const changelog = await promo.changelog.create({
+const entry = await promo.changelog.create({
   projectId: 'project_123',
-  version: 'v1.2.0',
-  title: 'New Features Release',
-  content: 'We are excited to announce...',
+  version: 'v2.1.0',
+  title: 'Major Update',
+  content: 'We have released a major update with lots of new features...',
   changes: [
-    'Added dark mode',
-    'Improved performance',
-    'Fixed bugs'
+    'New dashboard design',
+    'Performance improvements',
+    'Bug fixes'
   ],
   publishedAt: '2024-01-15T10:00:00Z' // optional, defaults to now
 });
@@ -193,16 +195,17 @@ const changelog = await promo.changelog.create({
 //   title: string,
 //   content: string,
 //   changes: string[],
-//   publishedAt: string
+//   publishedAt: string,
+//   createdAt: string
 // }
 ```
 
-#### Get Entries
+#### Get Changelog Entries
 
 ```javascript
 const result = await promo.changelog.get('project_123', {
-  limit: 10, // optional
-  offset: 0 // optional
+  limit: 5,
+  offset: 0
 });
 
 // Returns:
@@ -220,71 +223,72 @@ const result = await promo.changelog.get('project_123', {
 #### Subscribe to Updates
 
 ```javascript
-const result = await promo.changelog.subscribe('project_123', 'user@example.com');
-// Returns APIResponse with success status
+await promo.changelog.subscribe('project_123', 'user@example.com');
 ```
 
 #### Update Entry
 
 ```javascript
-const updated = await promo.changelog.update('entry_id', {
+const updated = await promo.changelog.update('entry_123', {
   title: 'Updated Title',
   content: 'Updated content...'
 });
-// Returns updated ChangelogEntry
 ```
 
 #### Delete Entry
 
 ```javascript
-const result = await promo.changelog.delete('entry_id');
-// Returns APIResponse with success status
+await promo.changelog.delete('entry_123');
 ```
 
 ## Error Handling
 
-All API methods throw errors when requests fail:
+The SDK includes comprehensive error handling:
 
 ```javascript
+import { PromoError } from '@promokit/js';
+
 try {
   const entry = await promo.waitlist.create({
     projectId: 'project_123',
-    email: 'user@example.com'
+    email: 'invalid-email'
   });
 } catch (error) {
-  console.error('Failed to create waitlist entry:', error.message);
-  // Handle error appropriately
+  if (error instanceof PromoError) {
+    console.error('API Error:', error.details);
+    console.error('Status:', error.apiError.status);
+    console.error('Message:', error.apiError.message);
+  } else {
+    console.error('Network Error:', error.message);
+  }
+}
+```
+
+### PromoError Properties
+
+```typescript
+interface APIError {
+  status: number;
+  statusText: string;
+  message: string;
+  details: any;
+  endpoint: string;
+  timestamp: string;
+}
+
+class PromoError extends Error {
+  apiError: APIError;
+  constructor(apiError: APIError);
 }
 ```
 
 ## TypeScript Support
 
-This package includes comprehensive TypeScript definitions:
-
-```typescript
-import { 
-  PromoClient, 
-  WaitlistEntry, 
-  Testimonial, 
-  ChangelogEntry,
-  WaitlistStats,
-  APIResponse 
-} from '@promokit/js';
-
-const promo = new PromoClient({ apiKey: 'your-api-key' });
-
-const entry: WaitlistEntry = await promo.waitlist.create({
-  projectId: 'project_123',
-  email: 'user@example.com'
-});
-```
-
-## Available Types
+Full TypeScript definitions are included:
 
 ```typescript
 interface PromoConfig {
   apiKey: string;
-  baseUrl?: string;
 }
 
 interface WaitlistEntry {
@@ -304,7 +308,7 @@ interface Testimonial {
   role?: string;
   company?: string;
   avatar?: string;
-  rating: number;
+  rating?: number;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: string;
   metadata?: Record<string, any>;
@@ -317,29 +321,74 @@ interface ChangelogEntry {
   content: string;
   changes: string[];
   publishedAt: string;
-}
-
-interface WaitlistStats {
-  totalSignups: number;
-  signupsToday: number;
-  signupsThisWeek: number;
-  referralStats: Array<{
-    referrer: string;
-    count: number;
-  }>;
-}
-
-interface APIResponse<T = any> {
-  data?: T;
-  error?: string;
-  success: boolean;
+  createdAt: string;
 }
 ```
 
-## Browser Support
+## Node.js Example
 
-This package works in all modern browsers and Node.js environments. It uses the Fetch API for HTTP requests.
+```javascript
+const { PromoClient } = require('@promokit/js');
 
-## License
+const promo = new PromoClient({
+  apiKey: process.env.PROMOKIT_API_KEY
+});
 
-MIT
+async function addToWaitlist(email, referralCode) {
+  try {
+    const entry = await promo.waitlist.create({
+      projectId: process.env.PROMOKIT_PROJECT_ID,
+      email,
+      referralCode,
+      metadata: {
+        source: 'server-side',
+        timestamp: new Date().toISOString()
+      }
+    });
+  
+    console.log(`Added ${email} to waitlist at position ${entry.position}`);
+    return entry;
+  } catch (error) {
+    console.error('Failed to add to waitlist:', error.message);
+    throw error;
+  }
+}
+```
+
+## Next.js API Route Example
+
+```javascript
+// pages/api/waitlist.js
+import { PromoClient } from '@promokit/js';
+
+const promo = new PromoClient({
+  apiKey: process.env.PROMOKIT_API_KEY
+});
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { email, referralCode } = req.body;
+
+  try {
+    const entry = await promo.waitlist.create({
+      projectId: process.env.PROMOKIT_PROJECT_ID,
+      email,
+      referralCode,
+      metadata: {
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent']
+      }
+    });
+
+    res.status(200).json(entry);
+  } catch (error) {
+    console.error('Waitlist API error:', error);
+    res.status(error.apiError?.status || 500).json({
+      error: error.message || 'Internal server error'
+    });
+  }
+}
+```

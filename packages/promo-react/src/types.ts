@@ -1,42 +1,69 @@
+import React from 'react';
+
+// Import the PromoError type from the JS package
+import { PromoError } from '@promokit/js';
+
+// Global analytics interface for type safety
+declare global {
+  interface Window {
+    analytics?: {
+      track: (event: string, properties?: Record<string, any>) => void;
+      identify: (userId: string, traits?: Record<string, any>) => void;
+      page: (name?: string, properties?: Record<string, any>) => void;
+    };
+  }
+  
+  const analytics: {
+    track: (event: string, properties?: Record<string, any>) => void;
+    identify: (userId: string, traits?: Record<string, any>) => void;
+    page: (name?: string, properties?: Record<string, any>) => void;
+  };
+}
+
 export interface PromoConfig {
   apiKey: string;
-  baseUrl?: string;
 }
 
 export interface WaitlistProps {
   projectId: string;
-  apiKey: string;
-  baseUrl?: string;
+  apiKey?: string; // Now optional when using PromoProvider
   theme?: 'light' | 'dark' | 'auto';
   referralReward?: string;
+  referralCode?: string; // Referral code from URL params
   customStyles?: React.CSSProperties;
   onSignup?: (email: string, referralCode?: string) => void;
-  onError?: (error: Error) => void;
+  onError?: (error: PromoError | Error) => void;
+  showDetailedErrors?: boolean; // New prop to show detailed error information
+  enableRetry?: boolean; // New prop to enable retry functionality
   className?: string;
 }
 
 export interface TestimonialWallProps {
   productId: string;
-  apiKey: string;
-  baseUrl?: string;
+  apiKey?: string; // Now optional when using PromoProvider
   layout?: 'grid' | 'masonry' | 'carousel';
   theme?: 'light' | 'dark' | 'auto';
   autoRefresh?: boolean;
   maxItems?: number;
   showRating?: boolean;
   onTestimonialClick?: (testimonial: Testimonial) => void;
+  onError?: (error: PromoError | Error) => void;
+  showDetailedErrors?: boolean;
+  enableRetry?: boolean;
   className?: string;
 }
 
 export interface ChangelogFeedProps {
   projectId: string;
-  apiKey: string;
-  baseUrl?: string;
+  apiKey?: string; // Now optional when using PromoProvider
   theme?: 'light' | 'dark' | 'auto';
   showSubscribe?: boolean;
   compact?: boolean;
   maxItems?: number;
-  onVersionClick?: (version: ChangelogEntry) => void;
+  onVersionClick?: (entry: ChangelogEntry) => void;
+  onError?: (error: PromoError | Error) => void;
+  showDetailedErrors?: boolean;
+  enableRetry?: boolean;
   className?: string;
 }
 
