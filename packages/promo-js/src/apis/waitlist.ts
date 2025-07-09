@@ -4,7 +4,7 @@ export class WaitlistAPI {
   constructor(private config: PromoConfig) {}
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.config.baseUrl}${endpoint}`;
+    const url = `${this.config.baseUrl}/api${endpoint}`;
     
     const response = await fetch(url, {
       ...options,

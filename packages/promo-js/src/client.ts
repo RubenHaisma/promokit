@@ -24,7 +24,7 @@ export class PromoClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.config.baseUrl}${endpoint}`;
+    const url = `${this.config.baseUrl}/api${endpoint}`;
     
     const response = await fetch(url, {
       ...options,
