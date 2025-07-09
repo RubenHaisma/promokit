@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Star, User } from 'lucide-react';
 import { TestimonialWallProps, Testimonial } from '../types';
-import { usePromo } from './PromoProvider';
+import { PromoClient } from '@promokit/js';
 import { clsx } from 'clsx';
 
 export function TestimonialWall({
   productId,
+  apiKey,
+  baseUrl,
   layout = 'grid',
   theme = 'dark',
   autoRefresh = false,
@@ -15,7 +17,7 @@ export function TestimonialWall({
   onTestimonialClick,
   className
 }: TestimonialWallProps) {
-  const promoClient = usePromo();
+  const promoClient = useMemo(() => new PromoClient({ apiKey, baseUrl }), [apiKey, baseUrl]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

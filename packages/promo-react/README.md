@@ -10,43 +10,27 @@ npm install @promokit/react
 
 ## Quick Start
 
+Simply import and use any component with your API key - no provider wrapper needed!
+
 ```jsx
-import { PromoProvider, Waitlist } from '@promokit/react';
+import { Waitlist } from '@promokit/react';
 
 function App() {
   return (
-    <PromoProvider config={{ apiKey: 'your-api-key' }}>
-      <Waitlist 
-        projectId="your-project-id"
-        theme="dark"
-        referralReward="Skip the line"
-        onSignup={(email) => console.log('New signup:', email)}
-      />
-    </PromoProvider>
+    <Waitlist 
+      projectId="your-project-id"
+      apiKey="your-api-key"
+      theme="dark"
+      referralReward="Skip the line"
+      onSignup={(email) => console.log('New signup:', email)}
+    />
   );
 }
 ```
 
 ## Components
 
-### PromoProvider
-
-Wrap your app with the PromoProvider to configure the API client:
-
-```jsx
-import { PromoProvider } from '@promokit/react';
-
-function App() {
-  return (
-    <PromoProvider config={{ 
-      apiKey: 'your-api-key',
-      baseUrl: 'https://api.promo.dev' // optional
-    }}>
-      {/* Your components */}
-    </PromoProvider>
-  );
-}
-```
+All components are **plug-and-play** - just pass your API credentials as props!
 
 ### Waitlist
 
@@ -59,6 +43,8 @@ function MyWaitlist() {
   return (
     <Waitlist 
       projectId="your-project-id"
+      apiKey="your-api-key"
+      baseUrl="https://api.promo.dev" // optional
       theme="dark" // 'light', 'dark', or 'auto'
       referralReward="Skip 10 spots in line"
       onSignup={(email, referralCode) => {
@@ -82,6 +68,8 @@ function MyWaitlist() {
 
 **Props:**
 - `projectId` (string, required) - Your project ID
+- `apiKey` (string, required) - Your PromoKit API key
+- `baseUrl` (string, optional) - API base URL, defaults to PromoKit's API
 - `theme` ('light' | 'dark' | 'auto', optional) - Color theme, defaults to 'dark'
 - `referralReward` (string, optional) - Text describing referral reward, defaults to 'Skip the line'
 - `customStyles` (React.CSSProperties, optional) - Custom CSS styles
@@ -100,6 +88,7 @@ function MyTestimonials() {
   return (
     <TestimonialWall 
       productId="your-project-id"
+      apiKey="your-api-key"
       layout="masonry" // 'grid', 'masonry', or 'carousel'
       theme="auto"
       maxItems={12}
@@ -117,6 +106,8 @@ function MyTestimonials() {
 
 **Props:**
 - `productId` (string, required) - Your project ID
+- `apiKey` (string, required) - Your PromoKit API key
+- `baseUrl` (string, optional) - API base URL, defaults to PromoKit's API
 - `layout` ('grid' | 'masonry' | 'carousel', optional) - Layout style, defaults to 'grid'
 - `theme` ('light' | 'dark' | 'auto', optional) - Color theme, defaults to 'dark'
 - `autoRefresh` (boolean, optional) - Auto-refresh testimonials every 30 seconds, defaults to false
@@ -136,6 +127,7 @@ function MyChangelog() {
   return (
     <ChangelogFeed 
       projectId="your-project-id"
+      apiKey="your-api-key"
       theme="light"
       showSubscribe={true}
       compact={false}
@@ -152,6 +144,8 @@ function MyChangelog() {
 
 **Props:**
 - `projectId` (string, required) - Your project ID
+- `apiKey` (string, required) - Your PromoKit API key
+- `baseUrl` (string, optional) - API base URL, defaults to PromoKit's API
 - `theme` ('light' | 'dark' | 'auto', optional) - Color theme, defaults to 'dark'
 - `showSubscribe` (boolean, optional) - Show email subscription form, defaults to true
 - `compact` (boolean, optional) - Compact layout without full content, defaults to false
@@ -175,6 +169,7 @@ Pass custom styles via the `customStyles` prop:
 ```jsx
 <Waitlist 
   projectId="your-project-id"
+  apiKey="your-api-key"
   customStyles={{
     backgroundColor: 'var(--your-bg-color)',
     borderRadius: '12px',
@@ -191,6 +186,7 @@ Add custom CSS classes for additional styling:
 ```jsx
 <Waitlist 
   projectId="your-project-id"
+  apiKey="your-api-key"
   className="my-waitlist-styles custom-border"
 />
 ```
@@ -229,13 +225,10 @@ const MyWaitlist: React.FC<WaitlistProps> = (props) => {
 ### Available Types
 
 ```typescript
-interface PromoConfig {
-  apiKey: string;
-  baseUrl?: string;
-}
-
 interface WaitlistProps {
   projectId: string;
+  apiKey: string;
+  baseUrl?: string;
   theme?: 'light' | 'dark' | 'auto';
   referralReward?: string;
   customStyles?: React.CSSProperties;
@@ -246,6 +239,8 @@ interface WaitlistProps {
 
 interface TestimonialWallProps {
   productId: string;
+  apiKey: string;
+  baseUrl?: string;
   layout?: 'grid' | 'masonry' | 'carousel';
   theme?: 'light' | 'dark' | 'auto';
   autoRefresh?: boolean;
@@ -257,6 +252,8 @@ interface TestimonialWallProps {
 
 interface ChangelogFeedProps {
   projectId: string;
+  apiKey: string;
+  baseUrl?: string;
   theme?: 'light' | 'dark' | 'auto';
   showSubscribe?: boolean;
   compact?: boolean;
@@ -273,6 +270,7 @@ Handle errors gracefully with the `onError` prop:
 ```jsx
 <Waitlist 
   projectId="your-project-id"
+  apiKey="your-api-key"
   onError={(error) => {
     // Log to your error tracking service
     console.error('Waitlist error:', error);
@@ -310,59 +308,68 @@ All animations respect user's motion preferences and can be disabled via CSS:
 
 ```jsx
 // pages/waitlist.js
-import { PromoProvider, Waitlist } from '@promokit/react';
+import { Waitlist } from '@promokit/react';
 
 export default function WaitlistPage() {
   return (
-    <PromoProvider config={{ apiKey: process.env.NEXT_PUBLIC_PROMO_API_KEY }}>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Waitlist 
-          projectId={process.env.NEXT_PUBLIC_PROMO_PROJECT_ID}
-          theme="auto"
-          onSignup={(email, referralCode) => {
-            // Track with Next.js analytics
-            gtag('event', 'waitlist_signup', {
-              email_domain: email.split('@')[1],
-              referral_code: referralCode
-            });
-          }}
-        />
-      </div>
-    </PromoProvider>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Waitlist 
+        projectId={process.env.NEXT_PUBLIC_PROMO_PROJECT_ID}
+        apiKey={process.env.NEXT_PUBLIC_PROMO_API_KEY}
+        theme="auto"
+        onSignup={(email, referralCode) => {
+          // Track with Next.js analytics
+          gtag('event', 'waitlist_signup', {
+            email_domain: email.split('@')[1],
+            referral_code: referralCode
+          });
+        }}
+      />
+    </div>
   );
 }
 ```
 
-### Custom Themed Components
+### Multiple Components
 
 ```jsx
-import { PromoProvider, Waitlist, TestimonialWall } from '@promokit/react';
+import { Waitlist, TestimonialWall, ChangelogFeed } from '@promokit/react';
 
 function App() {
+  const apiKey = process.env.REACT_APP_PROMO_API_KEY;
+  const projectId = process.env.REACT_APP_PROMO_PROJECT_ID;
+
   return (
-    <PromoProvider config={{ apiKey: 'your-api-key' }}>
-      <div className="space-y-12">
-        <Waitlist 
-          projectId="your-project-id"
-          theme="dark"
-          customStyles={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            borderRadius: '20px',
-            padding: '2rem',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
-          }}
-        />
-        
-        <TestimonialWall
-          productId="your-project-id"
-          layout="masonry"
-          theme="light"
-          maxItems={9}
-          showRating={true}
-        />
-      </div>
-    </PromoProvider>
+    <div className="space-y-12">
+      <Waitlist 
+        projectId={projectId}
+        apiKey={apiKey}
+        theme="dark"
+        customStyles={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          borderRadius: '20px',
+          padding: '2rem',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+        }}
+      />
+      
+      <TestimonialWall
+        productId={projectId}
+        apiKey={apiKey}
+        layout="masonry"
+        theme="light"
+        maxItems={9}
+        showRating={true}
+      />
+
+      <ChangelogFeed
+        projectId={projectId}
+        apiKey={apiKey}
+        theme="auto"
+        showSubscribe={true}
+      />
+    </div>
   );
 }
 ```
@@ -377,6 +384,7 @@ function TrackedWaitlist() {
   return (
     <Waitlist 
       projectId="your-project-id"
+      apiKey="your-api-key"
       onSignup={(email, referralCode) => {
         // Multiple analytics providers
         analytics.track('Waitlist Signup', {

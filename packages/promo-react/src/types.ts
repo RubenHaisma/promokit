@@ -5,6 +5,8 @@ export interface PromoConfig {
 
 export interface WaitlistProps {
   projectId: string;
+  apiKey: string;
+  baseUrl?: string;
   theme?: 'light' | 'dark' | 'auto';
   referralReward?: string;
   customStyles?: React.CSSProperties;
@@ -15,6 +17,8 @@ export interface WaitlistProps {
 
 export interface TestimonialWallProps {
   productId: string;
+  apiKey: string;
+  baseUrl?: string;
   layout?: 'grid' | 'masonry' | 'carousel';
   theme?: 'light' | 'dark' | 'auto';
   autoRefresh?: boolean;
@@ -26,6 +30,8 @@ export interface TestimonialWallProps {
 
 export interface ChangelogFeedProps {
   projectId: string;
+  apiKey: string;
+  baseUrl?: string;
   theme?: 'light' | 'dark' | 'auto';
   showSubscribe?: boolean;
   compact?: boolean;

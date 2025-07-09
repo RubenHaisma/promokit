@@ -32,12 +32,15 @@
     border: 1px solid;
     padding: 0.75rem 1rem;
     width: 100%;
+    position: relative;
+    z-index: 10;
   }
   
   .promo-input:focus {
     outline: none;
     ring: 2px;
     ring-offset: 2px;
+    z-index: 20;
   }
   
   .promo-card {
@@ -45,10 +48,32 @@
     border: 1px solid;
     padding: 1.5rem;
     transition: all 0.3s ease-in-out;
+    position: relative;
   }
   
   .promo-card:hover {
     transform: translateY(-2px);
+  }
+
+  /* Fix for form elements to prevent border clipping */
+  .promo-form-container {
+    position: relative;
+    z-index: 10;
+    isolation: isolate;
+  }
+
+  .promo-form-container input {
+    position: relative;
+    z-index: 15;
+  }
+
+  .promo-form-container input:focus {
+    z-index: 25;
+  }
+
+  .promo-form-container button {
+    position: relative;
+    z-index: 15;
   }
   
   /* Animation keyframes */

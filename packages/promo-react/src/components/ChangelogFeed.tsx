@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Tag, Bell } from 'lucide-react';
 import { ChangelogFeedProps, ChangelogEntry } from '../types';
-import { usePromo } from './PromoProvider';
+import { PromoClient } from '@promokit/js';
 import { clsx } from 'clsx';
 
 export function ChangelogFeed({
   projectId,
+  apiKey,
+  baseUrl,
   theme = 'dark',
   showSubscribe = true,
   compact = false,
@@ -14,7 +16,7 @@ export function ChangelogFeed({
   onVersionClick,
   className
 }: ChangelogFeedProps) {
-  const promoClient = usePromo();
+  const promoClient = useMemo(() => new PromoClient({ apiKey, baseUrl }), [apiKey, baseUrl]);
   const [entries, setEntries] = useState<ChangelogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [email, setEmail] = useState('');
@@ -87,7 +89,7 @@ export function ChangelogFeed({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className={clsx(
-            'p-6 rounded-lg border',
+            'p-6 rounded-lg border relative z-10',
             isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
           )}
         >
@@ -106,7 +108,7 @@ export function ChangelogFeed({
           )}>
             Get notified when we release new features and updates
           </p>
-          <form onSubmit={handleSubscribe} className="flex space-x-2">
+          <form onSubmit={handleSubscribe} className="flex space-x-2 relative">
             <input
               type="email"
               placeholder="Enter your email"
@@ -114,15 +116,22 @@ export function ChangelogFeed({
               onChange={(e) => setEmail(e.target.value)}
               required
               className={clsx(
-                'flex-1 px-3 py-2 rounded border',
+                'flex-1 px-3 py-2 rounded border relative z-20 focus:z-30',
+                'focus:ring-2 focus:ring-purple-500 focus:border-purple-500',
+                'transition-all duration-200 outline-none',
                 isDark 
-                  ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' 
-                  : 'bg-white border-gray-300 placeholder-gray-500'
+                  ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:bg-slate-600' 
+                  : 'bg-white border-gray-300 placeholder-gray-500 focus:bg-white'
               )}
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white rounded font-medium"
+              className={clsx(
+                'px-4 py-2 bg-gradient-to-r from-purple-500 to-violet-500',
+                'hover:from-purple-600 hover:to-violet-600 text-white rounded font-medium',
+                'relative z-20 transition-all duration-200',
+                'focus:ring-2 focus:ring-purple-500 focus:ring-offset-2'
+              )}
             >
               Subscribe
             </button>
