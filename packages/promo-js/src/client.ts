@@ -13,6 +13,8 @@ export class PromoClient {
     this.config = {
       baseUrl: 'https://promokit.pro',
       ...config,
+      // Only override baseUrl if it's explicitly provided (not undefined)
+      ...(config.baseUrl !== undefined && { baseUrl: config.baseUrl }),
     };
 
     this.waitlist = new WaitlistAPI(this.config);
